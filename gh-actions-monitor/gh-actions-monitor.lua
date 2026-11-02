@@ -25,11 +25,14 @@ end
 
 local function usage()
   io.stderr:write([[
-git-monitor - watch GitHub Actions via gh
+gh-actions-monitor - poll GitHub Actions runs and PR checks via gh
 
 Usage:
-  git-monitor run <run-id> [--repo OWNER/REPO] [--interval SEC] [--timeout SEC] [--soft-deadline SEC] [--verbose]
-  git-monitor pr-checks <pr> [--repo OWNER/REPO] [--interval SEC] [--timeout SEC] [--soft-deadline SEC] [--fail-fast] [--verbose]
+  gh-actions-monitor run <run-id> [--repo OWNER/REPO] [--interval SEC] [--timeout SEC] [--soft-deadline SEC] [--verbose]
+  gh-actions-monitor pr-checks <pr> [--repo OWNER/REPO] [--interval SEC] [--timeout SEC] [--soft-deadline SEC] [--fail-fast] [--verbose]
+Subcommands:
+  run        poll one GitHub Actions workflow run until it completes
+  pr-checks  poll all checks of a pull request until they settle
 ]])
 end
 

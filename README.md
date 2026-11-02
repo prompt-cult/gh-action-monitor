@@ -1,14 +1,14 @@
-# git-monitor
+# gh-action-monitor
 
-Tiny LuaJIT wrapper around GitHub CLI for brute-force GitHub Actions polling.
+Tiny LuaJIT wrapper around GitHub CLI for brute-force GitHub Actions run / PR-jobs monitoring and polling.
 
-Canonical skill/tool contents live in [`gh_monitor/`](gh_monitor/).
+Canonical skill/tool contents live in [`gh-actions-monitor/`](gh-actions-monitor/).
 
 ## Why
 
 Sometimes `gh` watch flows are not good enough operationally. The failure mode is a long blind sleep, then a stale refresh after the job finished ages ago.
 
-`git-monitor` fixes that by polling fresh `gh` state on a short interval and returning as soon as the run or PR checks change state.
+`gh-actions-monitor` fixes that by polling fresh `gh` state on a short interval and returning as soon as the run or PR checks change state.
 
 ## Requirements
 
@@ -18,42 +18,41 @@ Sometimes `gh` watch flows are not good enough operationally. The failure mode i
 
 ## Layout
 
-Bundled in [`gh_monitor/`](gh_monitor/):
+Bundled in [`gh-actions-monitor/`](gh-actions-monitor/):
 
 | File | Role |
 |------|------|
-| [`gh_monitor/SKILL.md`](gh_monitor/SKILL.md) | Skill instructions for agents |
-| [`gh_monitor/git_monitor.lua`](gh_monitor/git_monitor.lua) | Executable LuaJIT polling tool |
+| [`gh-actions-monitor/SKILL.md`](gh-actions-monitor/SKILL.md) | Skill instructions for agents |
+| [`gh-actions-monitor/gh-actions-monitor.lua`](gh-actions-monitor/gh-actions-monitor.lua) | Executable LuaJIT polling tool |
 
 ## Install
-
 
 **Codex / Claude skill install:**
 
 ```bash
 mkdir -p ~/.codex/skills
-git clone https://github.com/simbo1905/git-monitor.git ~/.codex/skills/gh_monitor
+git clone https://github.com/prompt-cult/gh-action-monitor.git ~/.codex/skills/gh-actions-monitor
 ```
 
 ```sh
-chmod +x gh_monitor/git_monitor.lua
-export PATH="$PWD/gh_monitor:$PATH"
+chmod +x gh-actions-monitor/gh-actions-monitor.lua
+export PATH="$PWD/gh-actions-monitor:$PATH"
 ```
 
-Then use it as a git-style subcommand:
+Then invoke the tool directly:
 
 ```sh
-git monitor run <run-id> --repo owner/repo
+gh-actions-monitor --help
 ```
 
-Details and operator guidance: [`gh_monitor/SKILL.md`](gh_monitor/SKILL.md).
+Details and operator guidance: [`gh-actions-monitor/SKILL.md`](gh-actions-monitor/SKILL.md).
 
 ## Usage
 
 ### Watch one run
 
 ```sh
-git monitor run 26059219391 \
+gh-actions-monitor run 26059219391 \
   --repo livemorecapital/livemore-pricing-engine \
   --interval 15 \
   --soft-deadline 480 \
@@ -63,7 +62,7 @@ git monitor run 26059219391 \
 ### Watch PR checks
 
 ```sh
-git monitor pr-checks 389 \
+gh-actions-monitor pr-checks 389 \
   --repo livemorecapital/livemore-pricing-engine \
   --interval 15 \
   --soft-deadline 480 \
