@@ -1,15 +1,23 @@
 #!/usr/bin/env luajit
-local VERSION = "0.1.0"
+local VERSION = "0.2.0"
 
 local function q(s)
   return "'" .. tostring(s):gsub("'", [['"'"']]) .. "'"
 end
 
 local function cmd(s)
-  local f = assert(io.popen(s .. " 2>&1"))
+  -- LuaJIT's io.close on pipes always returns true and never the child's
+  -- exit status, so the rc is echoed by the shell itself and parsed back.
+  local f = assert(io.popen(s .. " 2>&1 </dev/null; printf '\\nRC=%d\\n' \"$?\""))
   local out = f:read("*a") or ""
-  local ok, _, code = f:close()
-  return out, ok and 0 or code or 1
+  f:close()
+  local rc = 1
+  local rc_line = out:match("RC=(%d+)%s*$")
+  if rc_line then
+    rc = tonumber(rc_line) or 1
+    out = out:gsub("RC=%d+%s*$", "")
+  end
+  return out, rc
 end
 
 local function tsv(line, n)
@@ -35,6 +43,8 @@ Subcommands:
   pr-checks  poll all checks of a pull request until they settle
 ]])
 end
+
+io.stdout:setvbuf("line")
 
 local args = {...}
 if #args == 0 or args[1] == "-h" or args[1] == "--help" then usage(); os.exit(0) end
