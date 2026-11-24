@@ -1,13 +1,31 @@
 #!/usr/bin/env luajit
 local VERSION = "0.2.0"
+local WINDOWS = package.config:sub(1, 1) == "\\"
 
 local function q(s)
+  if WINDOWS then
+    return '"' .. tostring(s):gsub('([%%"])', "\\%1") .. '"'
+  end
   return "'" .. tostring(s):gsub("'", [['"'"']]) .. "'"
 end
 
 local function cmd(s)
   -- LuaJIT's io.close on pipes always returns true and never the child's
   -- exit status, so the rc is echoed by the shell itself and parsed back.
+  if WINDOWS then
+    local output_path = os.tmpname()
+    local rc_path = output_path .. ".rc"
+    os.execute(s .. " > " .. q(output_path) .. " 2>&1 & (if errorlevel 1 (echo 1) else (echo 0)) > " .. q(rc_path))
+    local output = io.open(output_path, "r")
+    local out = output and output:read("*a") or ""
+    if output then output:close() end
+    local status = io.open(rc_path, "r")
+    local rc = status and tonumber(status:read("*a")) or 1
+    if status then status:close() end
+    os.remove(output_path)
+    os.remove(rc_path)
+    return out, rc
+  end
   local f = assert(io.popen(s .. " 2>&1 </dev/null; printf '\\nRC=%d\\n' \"$?\""))
   local out = f:read("*a") or ""
   f:close()
@@ -18,6 +36,15 @@ local function cmd(s)
     out = out:gsub("RC=%d+%s*$", "")
   end
   return out, rc
+end
+
+local function sleep(seconds)
+  if WINDOWS then
+    os.execute("powershell.exe -NoProfile -NonInteractive -Command " .. q(
+      ("Start-Sleep -Seconds %s"):format(tostring(seconds))))
+  else
+    os.execute("sleep " .. tostring(seconds))
+  end
 end
 
 local function tsv(line, n)
@@ -105,7 +132,7 @@ local function monitor_run()
     end
 
     check_deadline({ status = status, url = url })
-    os.execute("sleep " .. tostring(opt.interval))
+    sleep(opt.interval)
   end
 end
 
@@ -144,7 +171,7 @@ local function monitor_pr_checks()
     end
 
     check_deadline({ pending = pending, failed = failed, total = total, link = link })
-    os.execute("sleep " .. tostring(opt.interval))
+    sleep(opt.interval)
   end
 end
 
