@@ -1,5 +1,5 @@
 #!/usr/bin/env luajit
-local VERSION = "0.2.0"
+local VERSION = "0.2.1"
 local WINDOWS = package.config:sub(1, 1) == "\\"
 
 local function q(s)
